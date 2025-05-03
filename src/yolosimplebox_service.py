@@ -2,16 +2,17 @@ import concurrent.futures as futures
 import grpc
 import grpc_reflection.v1alpha.reflection as grpc_reflection
 import logging
-import simplebox_pb2
-import simplebox_pb2_grpc
+import yolosimplebox_pb2
+import yolosimplebox_pb2_grpc
 import inspect
 import os
 import time
+import numpy as np
+import torch
     
 import io
 from scipy.io import loadmat, savemat
-import numpy as np
-
+from ultralytics import YOLO
 
 # VERIFY THE PORT NUMBER 
 _PORT_ENV_VAR = 'PORT'
@@ -19,7 +20,7 @@ _PORT_DEFAULT = 8061
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 
-class ServiceImpl(simplebox_pb2_grpc.SimpleBoxServiceServicer):
+class ServiceImpl(yolosimplebox_pb2_grpc.SimpleBoxServiceServicer):
 
     def __init__(self):
         """
@@ -34,17 +35,18 @@ class ServiceImpl(simplebox_pb2_grpc.SimpleBoxServiceServicer):
                               as described in the process method
 
         """
+        self.model = YOLO("yolo11n.pt")
+
+ #       https://docs.ultralytics.com/modes/predict/#inference-arguments
         
-        
 
 
-
-    def process(self, request: simplebox_pb2.matfile, context):
+    def detect(self, request: yolosimplebox_pb2.matfile, context):
         """
         matfile is the matlab file with input data
 
         Args:
-            request: The ImageAndFeatures request to process
+            request: The Images request to process
             context: Context of the gRPC call
 
         Returns:
@@ -53,11 +55,26 @@ class ServiceImpl(simplebox_pb2_grpc.SimpleBoxServiceServicer):
         """
         datain = request.data
 
-        ret_file= run_codigo(datain)
-        return simplebox_pb2.matfile(data=ret_file)
+        ret_file= run_codigo(datain,self.model)
+        return yolosimplebox_pb2.matfile(data=ret_file)
 
 # THIS IS WHERE YOUR CODE MUST BE INSERTED
-def run_codigo(datafile):
+
+
+def to_array_dict(obj):
+    array_types = (list, tuple, np.ndarray, torch.Tensor)
+    return {
+        key: value.cpu().numpy() if isinstance(value, torch.Tensor) else value
+        for key, value in vars(obj).items()
+        if isinstance(value, array_types)
+    }
+
+# Example usage:
+# Assuming `result` is a prediction result from a Ultralytics model
+# array_dict = to_array_dict(result)
+# print(array_dict)
+
+def run_codigo(datafile,model):
     """
     Reads all variables from a MATLAB .mat file given a file pointer,
     
@@ -71,16 +88,15 @@ def run_codigo(datafile):
     mat_data=loadmat(io.BytesIO(datafile))
 
     # SPECIFIC CODE STARTS HERE
-    im2=mat_data["im"]
-
-
-
+    im=mat_data["im"]
+    results=model(im)
+    dataout=to_array_dict(results)
 
     # SPECIFIC CODE ENDS HERE
 
     f=io.BytesIO()
     # WRITE RETURNING DATA
-    savemat(f,{"im":-im2})
+    savemat(f,{"results":dataout})
     return f.getvalue()
 
 def get_port():
