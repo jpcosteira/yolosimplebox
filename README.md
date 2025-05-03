@@ -1,7 +1,7 @@
-# Generic processing component grpc enabled
-This code builds a AI4EU (acumos) component that executes the processing defined in a specific python function.
+# Yolo generic component grpc enabled
+This code builds a AI4EU (acumos) Yolo component that executes the processing defined in the "simplebox" calling function. This component is an adaptation of the simplebox http://github.com/jpcosteira/simplebox.git
 
-The input and return value are always a **.mat** file binary coded. 
+The input and return value are always a **.mat** file. 
 
 Data to the service is passed and returned through variables stored inside the .mat files (loaded and saved with **scipy.io.loadmat/savemat** )
 ## The specific code of the component
