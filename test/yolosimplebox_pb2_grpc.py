@@ -39,8 +39,8 @@ class SimpleBoxServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.process = channel.unary_unary(
-                '/SimpleBoxService/process',
+        self.detect = channel.unary_unary(
+                '/SimpleBoxService/detect',
                 request_serializer=yolosimplebox__pb2.matfile.SerializeToString,
                 response_deserializer=yolosimplebox__pb2.matfile.FromString,
                 _registered_method=True)
@@ -54,7 +54,7 @@ class SimpleBoxServiceServicer(object):
     :returns: The transformed image
     """
 
-    def process(self, request, context):
+    def detect(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -63,8 +63,8 @@ class SimpleBoxServiceServicer(object):
 
 def add_SimpleBoxServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'process': grpc.unary_unary_rpc_method_handler(
-                    servicer.process,
+            'detect': grpc.unary_unary_rpc_method_handler(
+                    servicer.detect,
                     request_deserializer=yolosimplebox__pb2.matfile.FromString,
                     response_serializer=yolosimplebox__pb2.matfile.SerializeToString,
             ),
@@ -85,7 +85,7 @@ class SimpleBoxService(object):
     """
 
     @staticmethod
-    def process(request,
+    def detect(request,
             target,
             options=(),
             channel_credentials=None,
@@ -98,7 +98,7 @@ class SimpleBoxService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/SimpleBoxService/process',
+            '/SimpleBoxService/detect',
             yolosimplebox__pb2.matfile.SerializeToString,
             yolosimplebox__pb2.matfile.FromString,
             options,

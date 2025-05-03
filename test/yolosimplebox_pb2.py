@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13yolosimplebox.proto\"\x17\n\x07matfile\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\x0c\x32\x31\n\x10SimpleBoxService\x12\x1d\n\x07process\x12\x08.matfile\x1a\x08.matfileb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13yolosimplebox.proto\"\x17\n\x07matfile\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\x0c\x32\x30\n\x10SimpleBoxService\x12\x1c\n\x06\x64\x65tect\x12\x08.matfile\x1a\x08.matfileb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,5 +34,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_MATFILE']._serialized_start=23
   _globals['_MATFILE']._serialized_end=46
   _globals['_SIMPLEBOXSERVICE']._serialized_start=48
-  _globals['_SIMPLEBOXSERVICE']._serialized_end=97
+  _globals['_SIMPLEBOXSERVICE']._serialized_end=96
 # @@protoc_insertion_point(module_scope)
