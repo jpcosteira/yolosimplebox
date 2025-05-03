@@ -153,12 +153,12 @@ if __name__ == '__main__':
     server = grpc.server(futures.ThreadPoolExecutor(),
                          options= [('grpc.max_send_message_length', 512 * 1024 * 1024), 
                                    ('grpc.max_receive_message_length', 512 * 1024 * 1024)])
-    simplebox_pb2_grpc.add_SimpleBoxServiceServicer_to_server(
+    yolosimplebox_pb2_grpc.add_SimpleBoxServiceServicer_to_server(
         ServiceImpl(), server)
 
     # Add reflection
     service_names = (
-        simplebox_pb2.DESCRIPTOR.services_by_name['SimpleBoxService'].full_name,
+        yolosimplebox_pb2.DESCRIPTOR.services_by_name['SimpleBoxService'].full_name,
         grpc_reflection.SERVICE_NAME
     )
     grpc_reflection.enable_server_reflection(service_names, server)
