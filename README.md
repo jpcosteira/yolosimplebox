@@ -4,8 +4,7 @@ This code builds a AI4EU (acumos) Yolo component that executes the processing de
 The input and return value are always a **.mat** file. 
 
 Data to the service is passed and returned through variables stored inside the .mat files (loaded and saved with **scipy.io.loadmat/savemat** )
-## The specific code of the component
-Edit file src/simplebox_service.py and place your edits in function run_codigo
+## The specific code of YOLO. Note that inside the mat file there should be a variable named im (image).
 
 ```python 
 def run_codigo(datafile):
@@ -26,14 +25,21 @@ def run_codigo(datafile):
     # image=mat_data["im"]
 
 
+    im=mat_data["im"]
+    results=model(im)
+
+    all_arrays = []
+
+    for i, result in enumerate(results):
+        arr_dict = extract_array_attributes(result, prefix=f'result[{i}].')
+        all_arrays.append(arr_dict)
+
 
     # SPECIFIC CODE ENDS HERE
 
-    # create file to return data
     f=io.BytesIO()
-
-    # WRITE RETURNING DATA TO MAT FILE - be carefull with the variable naming
-    #example (create a variable im ):  savemat(f,{"im":-image})
+    # WRITE RETURNING DATA
+    savemat(f,{"results":all_arrays})
     return f.getvalue()
 ```
 
