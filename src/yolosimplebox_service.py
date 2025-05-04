@@ -60,19 +60,37 @@ class ServiceImpl(yolosimplebox_pb2_grpc.SimpleBoxServiceServicer):
 
 # THIS IS WHERE YOUR CODE MUST BE INSERTED
 
+def to_array(value):
+    if isinstance(value, torch.Tensor):
+        return value.detach().cpu().numpy()
+    elif isinstance(value, np.ndarray):
+        return value
+    elif isinstance(value, (list, tuple)):
+        return value
+    else:
+        return None
 
-def to_array_dict(obj):
+def extract_array_attributes(obj, prefix=''):
     array_types = (list, tuple, np.ndarray, torch.Tensor)
-    return {
-        key: value.cpu().numpy() if isinstance(value, torch.Tensor) else value
-        for key, value in vars(obj).items()
-        if isinstance(value, array_types)
-    }
+    attr_dict = {}
+    
+    for attr in dir(obj):
+        if attr.startswith("_"):
+            continue  # Skip private/internal attributes
+        try:
+            value = getattr(obj, attr)
+            # Check for nested objects like boxes, masks, keypoints
+            if hasattr(value, '__dict__') and not isinstance(value, (np.ndarray, torch.Tensor)):
+                nested = extract_array_attributes(value, prefix=prefix + attr + '.')
+                attr_dict.update(nested)
+            elif isinstance(value, torch.Tensor):
+                attr_dict[prefix + attr] = value.detach().cpu().numpy()
+            elif isinstance(value, array_types):
+                attr_dict[prefix + attr] = value
+        except Exception:
+            continue
+    return attr_dict
 
-# Example usage:
-# Assuming `result` is a prediction result from a Ultralytics model
-# array_dict = to_array_dict(result)
-# print(array_dict)
 
 def run_codigo(datafile,model):
     """
@@ -90,13 +108,19 @@ def run_codigo(datafile,model):
     # SPECIFIC CODE STARTS HERE
     im=mat_data["im"]
     results=model(im)
-    dataout=to_array_dict(results)
+
+    all_arrays = []
+
+    for i, result in enumerate(results):
+        arr_dict = extract_array_attributes(result, prefix=f'result[{i}].')
+        all_arrays.append(arr_dict)
+
 
     # SPECIFIC CODE ENDS HERE
 
     f=io.BytesIO()
     # WRITE RETURNING DATA
-    savemat(f,{"results":dataout})
+    savemat(f,{"results":all_arrays})
     return f.getvalue()
 
 def get_port():
